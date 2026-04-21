@@ -1,29 +1,29 @@
 
-const crypto       = require('crypto');
-const User         = require('../models/user.model');
+const crypto = require('crypto');
+const User = require('../models/user.model');
 const {
   generateAccessToken,
   generateRefreshToken,
   verifyToken,
   hashToken,
-}                  = require('../services/token.service');
+} = require('../services/token.service');
 const {
   sendVerificationEmail,
   sendPasswordResetEmail,
-}                  = require('../services/email.service');
+} = require('../services/email.service');
 const asyncHandler = require('../utils/asyncHandler');
 
 const COOKIE_OPTIONS = {
   httpOnly: true,
-  secure:   process.env.NODE_ENV === 'production',
-  sameSite: 'strict',
+  secure: process.env.NODE_ENV === 'production',
+  sameSite: 'lax',   // 'strict' blocks cookies on cross-port fetch (5173→5000)
 };
 
-const ACCESS_COOKIE_OPTS  = { ...COOKIE_OPTIONS, maxAge: 15 * 60 * 1000 };
+const ACCESS_COOKIE_OPTS = { ...COOKIE_OPTIONS, maxAge: 15 * 60 * 1000 };
 const REFRESH_COOKIE_OPTS = { ...COOKIE_OPTIONS, maxAge: 7 * 24 * 60 * 60 * 1000 };
 
 const attachTokenCookies = (res, accessToken, refreshToken) => {
-  res.cookie('accessToken',  accessToken,  ACCESS_COOKIE_OPTS);
+  res.cookie('accessToken', accessToken, ACCESS_COOKIE_OPTS);
   res.cookie('refreshToken', refreshToken, REFRESH_COOKIE_OPTS);
 };
 
@@ -40,11 +40,11 @@ exports.register = asyncHandler(async (req, res) => {
 
   // ── Field presence check ──────────────────────────────────────────────────
   const required = { name, email, password, city, street, cardName, cardNumber, expiry, cvv };
-  const missing  = Object.keys(required).filter((k) => !required[k]?.toString().trim());
+  const missing = Object.keys(required).filter((k) => !required[k]?.toString().trim());
   if (missing.length) {
     return res.status(400).json({
       message: 'All fields are required.',
-      fields:  missing,
+      fields: missing,
     });
   }
 
@@ -82,7 +82,7 @@ exports.register = asyncHandler(async (req, res) => {
     await sendVerificationEmail(user.email, verifyToken_);
   } catch {
     // Roll back the token fields so user can request a new one
-    user.emailVerifyToken       = undefined;
+    user.emailVerifyToken = undefined;
     user.emailVerifyTokenExpiry = undefined;
     await user.save({ validateBeforeSave: false });
     return res.status(500).json({
@@ -135,7 +135,7 @@ exports.login = asyncHandler(async (req, res) => {
   }
 
   // ── Issue tokens ──────────────────────────────────────────────────────────
-  const accessToken  = generateAccessToken(user._id);
+  const accessToken = generateAccessToken(user._id);
   const refreshToken = generateRefreshToken(user._id);
 
   user.refreshToken = hashToken(refreshToken);
@@ -146,17 +146,17 @@ exports.login = asyncHandler(async (req, res) => {
   res.status(200).json({
     message: 'Signed in successfully.',
     user: {
-      id:    user._id,
-      name:  user.name,
+      id: user._id,
+      name: user.name,
       email: user.email,
-      city:  user.city,
+      city: user.city,
     },
   });
 });
 
 // ─── FORGOT PASSWORD ──────────────────────────────────────────────────────────
 exports.forgotPassword = asyncHandler(async (req, res) => {
-  
+
   const { email } = req.body;
 
   if (!email?.trim()) {
@@ -179,7 +179,7 @@ exports.forgotPassword = asyncHandler(async (req, res) => {
   try {
     await sendPasswordResetEmail(user.email, token);
   } catch {
-    user.passwordResetToken       = undefined;
+    user.passwordResetToken = undefined;
     user.passwordResetTokenExpiry = undefined;
     await user.save({ validateBeforeSave: false });
     return res.status(500).json({ message: 'Error sending reset email. Please try again.' });
@@ -193,14 +193,14 @@ exports.verifyEmail = asyncHandler(async (req, res) => {
   const hashedToken = crypto.createHash('sha256').update(req.params.token).digest('hex');
 
   const user = await User.findOne({
-    emailVerifyToken:       hashedToken,
+    emailVerifyToken: hashedToken,
     emailVerifyTokenExpiry: { $gt: Date.now() },
   }).select('+emailVerifyToken +emailVerifyTokenExpiry');
 
   if (!user) return res.status(400).json({ message: 'Invalid or expired verification link.' });
 
-  user.isEmailVerified        = true;
-  user.emailVerifyToken       = undefined;
+  user.isEmailVerified = true;
+  user.emailVerifyToken = undefined;
   user.emailVerifyTokenExpiry = undefined;
   await user.save({ validateBeforeSave: false });
 
@@ -228,7 +228,7 @@ exports.refreshToken = asyncHandler(async (req, res) => {
     return res.status(401).json({ message: 'Refresh token reuse detected. Please sign in again.' });
   }
 
-  const newAccessToken  = generateAccessToken(user._id);
+  const newAccessToken = generateAccessToken(user._id);
   const newRefreshToken = generateRefreshToken(user._id);
 
   user.refreshToken = hashToken(newRefreshToken);
@@ -243,7 +243,7 @@ exports.validateResetToken = asyncHandler(async (req, res) => {
   const hashedToken = crypto.createHash('sha256').update(req.params.token).digest('hex');
 
   const user = await User.findOne({
-    passwordResetToken:       hashedToken,
+    passwordResetToken: hashedToken,
     passwordResetTokenExpiry: { $gt: Date.now() },
   });
 
@@ -263,7 +263,7 @@ exports.logout = asyncHandler(async (req, res) => {
     } catch { /* already invalid */ }
   }
 
-  res.clearCookie('accessToken',  COOKIE_OPTIONS);
+  res.clearCookie('accessToken', COOKIE_OPTIONS);
   res.clearCookie('refreshToken', COOKIE_OPTIONS);
   res.status(200).json({ message: 'Signed out successfully.' });
 });
@@ -299,7 +299,7 @@ exports.logout = asyncHandler(async (req, res) => {
 // ─── RESET PASSWORD ────────────────────────────────────────────────────────
 exports.resetPassword = asyncHandler(async (req, res) => {
   const { password } = req.body;
-  const { token }    = req.params;
+  const { token } = req.params;
 
   // ── Field checks ──────────────────────────────────────────────────────────
   if (!token) {
@@ -323,7 +323,7 @@ exports.resetPassword = asyncHandler(async (req, res) => {
 
   // ── Find user with matching, non-expired token ────────────────────────────
   const user = await User.findOne({
-    passwordResetToken:       hashedToken,
+    passwordResetToken: hashedToken,
     passwordResetTokenExpiry: { $gt: Date.now() }, // still within 10-min window
   }).select('+passwordResetToken +passwordResetTokenExpiry +refreshToken');
 
@@ -335,20 +335,16 @@ exports.resetPassword = asyncHandler(async (req, res) => {
   }
 
   // ── Set new password — pre-save hook hashes it ────────────────────────────
-  user.password                 = password;
-  user.passwordResetToken       = undefined;
+  user.password = password;
+  user.passwordResetToken = undefined;
   user.passwordResetTokenExpiry = undefined;
-  user.refreshToken             = undefined;  // invalidate all active sessions
-  user.loginAttempts            = 0;
-  user.lockUntil                = undefined;
+  user.refreshToken = undefined;  // invalidate all active sessions
+  user.loginAttempts = 0;
+  user.lockUntil = undefined;
   await user.save();
 
   // ── Clear any auth cookies that might be set ──────────────────────────────
-  const COOKIE_OPTIONS = {
-    httpOnly: true,
-    secure:   process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
-  };
+  // Use the global COOKIE_OPTIONS (which has sameSite: 'lax' and other settings)
   res.clearCookie('accessToken',  COOKIE_OPTIONS);
   res.clearCookie('refreshToken', COOKIE_OPTIONS);
 
