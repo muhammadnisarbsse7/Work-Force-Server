@@ -1,13 +1,26 @@
 require('dotenv').config();
-const express               = require('express');
-const helmet                = require('helmet');
+const express = require('express');
+const cors = require('cors');
+const helmet = require('helmet');
 // const mongoSanitize         = require('express-mongo-sanitize');
 const sanitize = require('mongo-sanitize');
-const cookieParser          = require('cookie-parser');
-const { globalLimiter }     = require('./src/middleware/rateLimiter.middleware');
-const authRoutes            = require('./src/routes/auth.routes');
+const cookieParser = require('cookie-parser');
+const { globalLimiter } = require('./src/middleware/rateLimiter.middleware');
+const authRoutes = require('./src/routes/auth.routes');
 
 const app = express();
+
+// ─── CORS ────────────────────────────────────────────────────────────────────
+app.use(cors({
+  origin: [
+    'http://localhost:5173',
+    process.env.CLIENT_URL,
+  ].filter(Boolean),
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+}));
+
 
 // ─── Security headers ────────────────────────────────────────────────────────
 app.use(helmet());
@@ -31,6 +44,7 @@ app.use(globalLimiter);
 
 // ─── Routes ──────────────────────────────────────────────────────────────────
 app.use('/api/auth', authRoutes);
+app.use('/', authRoutes); // Support root-level links from emails
 
 // ─── 404 handler ─────────────────────────────────────────────────────────────
 app.use((req, res) => {
@@ -40,7 +54,7 @@ app.use((req, res) => {
 // ─── Global error handler ────────────────────────────────────────────────────
 app.use((err, req, res, next) => {
   const statusCode = err.statusCode || 500;
-  const message    = err.message    || 'Internal Server Error';
+  const message = err.message || 'Internal Server Error';
 
   // Never leak stack traces to the client in production
   if (process.env.NODE_ENV === 'development') {
