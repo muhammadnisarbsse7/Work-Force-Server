@@ -99,7 +99,7 @@ const sendVerificationEmail = (to, token) =>
       <div style="font-family:sans-serif;max-width:520px;margin:auto;padding:32px">
         <h2 style="color:#414141">Verify your email</h2>
         <p style="color:#666">Click below to verify. Expires in <strong>24 hours</strong>.</p>
-        <a href="${process.env.CLIENT_URL}/verify-email/${token}"
+        <a href="${'https://work-force-five.vercel.app/'}/verify-email/${token}"
            style="display:inline-block;padding:12px 28px;background:#e75d50;
                   color:#fff;border-radius:10px;text-decoration:none;margin:16px 0">
           Verify Email

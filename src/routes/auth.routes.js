@@ -13,14 +13,14 @@ const {
 } = require('../controllers/auth.controllers');
 
 const { protect } = require('../middleware/auth.middleware');
-const { authLimiter } = require('../middleware/rateLimiter.middleware');
+// const { authLimiter } = require('../middleware/rateLimiter.middleware');
 
-// Rate-limited auth routes
-router.post('/register', authLimiter, register);
-router.post('/login', authLimiter, login);
-router.post('/forgot-password', authLimiter, forgotPassword);
+//
+router.post('/register', register);
+router.post('/login', login);
+router.post('/forgot-password', forgotPassword);
 router.get('/reset-password/:token', validateResetToken);
-router.post('/reset-password/:token', authLimiter, resetPassword);
+router.post('/reset-password/:token', resetPassword);
 
 router.get('/verify-email/:token', verifyEmail);
 
