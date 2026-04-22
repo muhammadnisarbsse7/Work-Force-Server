@@ -1,5 +1,5 @@
 const { verifyToken, hashToken } = require('../services/token.service');
-const User = require('../models/user.model');
+const User = require('../models/auth.model');
 
 const protect = async (req, res, next) => {
   try {

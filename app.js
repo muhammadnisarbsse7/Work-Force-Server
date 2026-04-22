@@ -7,6 +7,7 @@ const sanitize = require('mongo-sanitize');
 const cookieParser = require('cookie-parser');
 const { globalLimiter } = require('./src/middleware/rateLimiter.middleware');
 const authRoutes = require('./src/routes/auth.routes');
+const userRoutes = require('./src/routes/user.routes');
 
 const app = express();
 
@@ -66,6 +67,8 @@ app.use(globalLimiter);
 // ─── Routes ──────────────────────────────────────────────────────────────────
 app.use('/api/auth', authRoutes);
 app.use('/', authRoutes); // Support root-level links from emails
+app.use('/api/users', userRoutes);
+app.use('/uploads', express.static('uploads'));
 
 // ─── 404 handler ─────────────────────────────────────────────────────────────
 app.use((req, res) => {

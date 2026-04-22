@@ -1,6 +1,6 @@
 
 const crypto = require('crypto');
-const User = require('../models/user.model');
+const User = require('../models/auth.model');
 const {
   generateAccessToken,
   generateRefreshToken,
