@@ -9,6 +9,7 @@ const { globalLimiter } = require('./src/middleware/rateLimiter.middleware');
 const authRoutes = require('./src/routes/auth.routes');
 const userRoutes = require('./src/routes/user.routes');
 const vehicleRoutes = require('./src/routes/vehicle.routes');
+const sensorRoutes = require('./src/routes/sensor.routes');
 
 const app = express();
 
@@ -71,6 +72,7 @@ app.use('/', authRoutes); // Support root-level links from emails
 app.use('/api/users', userRoutes);
 app.use('/uploads', express.static('uploads'));
 app.use('/api/vehicles', vehicleRoutes);
+app.use('/api/sensors', sensorRoutes);
 
 // ─── 404 handler ─────────────────────────────────────────────────────────────
 app.use((req, res) => {
