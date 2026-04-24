@@ -10,6 +10,8 @@ const authRoutes = require('./src/routes/auth.routes');
 const userRoutes = require('./src/routes/user.routes');
 const vehicleRoutes = require('./src/routes/vehicle.routes');
 const sensorRoutes = require('./src/routes/sensor.routes');
+const projectRoutes = require('./src/routes/project.routes');
+
 
 const app = express();
 
@@ -45,7 +47,6 @@ app.use(cors({
   credentials: true,
 }));
 
-
 // ─── Security headers ────────────────────────────────────────────────────────
 app.use(helmet());
 
@@ -73,6 +74,7 @@ app.use('/api/users', userRoutes);
 app.use('/uploads', express.static('uploads'));
 app.use('/api/vehicles', vehicleRoutes);
 app.use('/api/sensors', sensorRoutes);
+app.use('/api/projects', projectRoutes);
 
 // ─── 404 handler ─────────────────────────────────────────────────────────────
 app.use((req, res) => {
