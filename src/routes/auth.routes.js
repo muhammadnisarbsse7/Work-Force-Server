@@ -1,6 +1,6 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const {
+import {
   register,
   verifyEmail,
   login,
@@ -10,9 +10,9 @@ const {
   resetPassword,
   validateResetToken,
   getMe,
-} = require('../controllers/auth.controllers');
+} from '../controllers/auth.controllers.js';
 
-const { protect } = require('../middleware/auth.middleware');
+import { protect } from '../middleware/auth.middleware.js';
 // const { authLimiter } = require('../middleware/rateLimiter.middleware');
 
 //
@@ -31,4 +31,4 @@ router.post('/logout', logout);
 // Protected route example
 router.get('/me', protect, getMe);
 
-module.exports = router;
+export default router;

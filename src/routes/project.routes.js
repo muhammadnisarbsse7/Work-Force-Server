@@ -1,15 +1,14 @@
-const express = require('express');
+import express from 'express';
 const router  = express.Router();
-
-const { protect }             = require('../middleware/auth.middleware');
-const {
-  getAllProjects,
-  getProjectById,
-  createProject,
-  updateProject,
-  deleteProject,
-  deleteManyProjects,
-} = require('../controllers/project.controller');
+import { protect } from '../middleware/auth.middleware.js';
+import {
+    getAllProjects,
+    getProjectById,
+    createProject,
+    updateProject,
+    deleteProject,
+    deleteManyProjects,
+} from '../controllers/project.controller.js';
 
 // All routes protected
 // router.use(protect);
@@ -23,4 +22,4 @@ router.post('/',    createProject);     // JSON body — no file upload
 router.put('/:id',  updateProject);
 router.delete('/:id', deleteProject);
 
-module.exports = router;
+export default router;

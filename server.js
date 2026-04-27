@@ -1,13 +1,9 @@
-require('dotenv').config();
-const { validateEnv } = require('./src/config/env');
-const connectDB = require('./src/config/db');
-const app = require('./app');
-
-// Validate all required env vars before doing anything else
+import 'dotenv/config';
+import { validateEnv } from './src/config/env.js';
+import connectDB from './src/config/db.js';
+import app from './app.js';
 validateEnv();
-
 const PORT = process.env.PORT || 5000;
-
 connectDB().then(() => {
   app.listen(PORT, () => {
     console.log(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);

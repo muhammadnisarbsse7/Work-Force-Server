@@ -1,4 +1,4 @@
-const rateLimit = require('express-rate-limit');
+import rateLimit from 'express-rate-limit';
 
 // Auth routes — strict (prevents brute-force)
 const authLimiter = rateLimit({
@@ -25,4 +25,4 @@ const globalLimiter = rateLimit({
   },
 });
 
-module.exports = { authLimiter, globalLimiter };
+export { authLimiter, globalLimiter };

@@ -1,16 +1,17 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
 
-const upload = require('../middleware/upload.middleware');
-const { protect } = require('../middleware/auth.middleware');
-const {
+import upload from '../middleware/upload.middleware.js';
+import {protect} from '../middleware/auth.middleware.js';
+import{
   getAllUsers,
   getUserById,
   createUser,
   updateUser,
   deleteUser,
   deleteManyUsers,
-} = require('../controllers/user.controller');
+} from '../controllers/user.controller.js';
+
 
 // ─── All routes protected ─────────────────────────────────────────────────────
 // router.use(protect);
@@ -24,4 +25,4 @@ router.post('/',    upload.single('profilePhoto'), createUser);
 router.put('/:id',  upload.single('profilePhoto'), updateUser);
 router.delete('/:id', deleteUser);
 
-module.exports = router;
+export default router;

@@ -1,5 +1,5 @@
-const { verifyToken, hashToken } = require('../services/token.service');
-const User = require('../models/auth.model');
+import { verifyToken, hashToken } from '../services/token.service.js';
+import User from '../models/auth.model.js';
 
 const protect = async (req, res, next) => {
   try {
@@ -32,4 +32,4 @@ const protect = async (req, res, next) => {
   }
 };
 
-module.exports = { protect };
+export { protect };

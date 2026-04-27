@@ -1,4 +1,4 @@
-const Vehicle = require('../models/vehicle.model');
+import Vehicle from '../models/vehicle.model.js';
 
 class VehicleService {
 
@@ -37,4 +37,4 @@ class VehicleService {
   }
 }
 
-module.exports = new VehicleService();
+export default new VehicleService();

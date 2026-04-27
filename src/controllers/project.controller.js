@@ -1,5 +1,5 @@
-const projectService = require('../services/project.service');
-const asyncHandler   = require('../utils/asyncHandler');
+import projectService from '../services/project.service.js';
+import asyncHandler from '../utils/asyncHandler.js';
 
 // ── GET /api/projects ─────────────────────────────────────────────────────────
 const getAllProjects = asyncHandler(async (req, res) => {
@@ -119,7 +119,7 @@ const deleteManyProjects = asyncHandler(async (req, res) => {
   });
 });
 
-module.exports = {
+export {
   getAllProjects,
   getProjectById,
   createProject,

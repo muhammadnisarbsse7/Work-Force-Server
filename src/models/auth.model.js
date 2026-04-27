@@ -96,9 +96,9 @@
 
 
 
-const mongoose = require('mongoose');
-const bcrypt = require('bcryptjs');
-const crypto = require('crypto');
+import mongoose from 'mongoose';
+import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
 
 // ─── Encrypt / Decrypt card fields using AES-256-GCM ─────────────────────────
 // Key must be 32 bytes — derive from env
@@ -260,4 +260,4 @@ authSchema.methods.getBillingData = function () {
   };
 };
 
-module.exports = mongoose.model('Auth', authSchema);
+export default mongoose.model('Auth', authSchema);

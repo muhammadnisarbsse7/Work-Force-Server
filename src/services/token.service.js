@@ -1,5 +1,6 @@
-const jwt    = require('jsonwebtoken');
-const crypto = require('crypto');
+
+import jwt from 'jsonwebtoken';
+import crypto from 'crypto';
 
 // ─── Short-lived access token (15 min) ──────────────────────────────────────
 const generateAccessToken = (userId) =>
@@ -31,7 +32,7 @@ const verifyToken = (token, type = 'access') => {
 const hashToken = (token) =>
   crypto.createHash('sha256').update(token).digest('hex');
 
-module.exports = {
+export {
   generateAccessToken,
   generateRefreshToken,
   verifyToken,

@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose'
 
 const sensorSchema = new mongoose.Schema(
   {
@@ -39,4 +39,4 @@ const sensorSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-module.exports = mongoose.model('Sensor', sensorSchema);
+export default mongoose.model('Sensor', sensorSchema);

@@ -1,4 +1,4 @@
-const Project = require('../models/project.model');
+import Project from '../models/project.model.js';
 
 class ProjectService {
 
@@ -37,4 +37,4 @@ class ProjectService {
   }
 }
 
-module.exports = new ProjectService();
+export default new ProjectService();

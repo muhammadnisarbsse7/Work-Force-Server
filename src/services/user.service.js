@@ -1,5 +1,4 @@
-const User = require('../models/user.model');
-
+import User from '../models/user.model.js';
 class UserService {
 
   // Get all users — sorted newest first
@@ -37,4 +36,4 @@ class UserService {
   }
 }
 
-module.exports = new UserService();
+export default new UserService();

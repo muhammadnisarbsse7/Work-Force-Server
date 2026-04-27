@@ -1,8 +1,8 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
 
-const { protect } = require('../middleware/auth.middleware');
-const {
+import { protect } from '../middleware/auth.middleware.js';
+import{
   getAllSensors,
   getSensorById,
   createSensor,
@@ -10,7 +10,15 @@ const {
   deleteSensor,
   deleteManySensors,
   toggleStatus,
-} = require('../controllers/sensor.controller');
+} from '../controllers/sensor.controller.js';
+
+
+
+
+
+
+
+
 
 // All routes protected
 // router.use(protect);
@@ -25,4 +33,4 @@ router.put('/:id', updateSensor);
 router.delete('/:id', deleteSensor);
 router.patch('/:id/toggle-status', toggleStatus);
 
-module.exports = router;
+export default router;

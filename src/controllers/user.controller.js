@@ -1,5 +1,5 @@
-const userService = require('../services/user.service');
-const asyncHandler = require('../utils/asyncHandler');
+import userService from '../services/user.service.js';
+import asyncHandler from '../utils/asyncHandler.js';
 
 // ─── GET /api/users ───────────────────────────────────────────────────────────
 // Users DataTable - get all users
@@ -111,7 +111,7 @@ const deleteManyUsers = asyncHandler(async (req, res) => {
   });
 });
 
-module.exports = {
+export {
   getAllUsers,
   getUserById,
   createUser,

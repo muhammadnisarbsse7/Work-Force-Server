@@ -1,17 +1,19 @@
-require('dotenv').config();
-const express = require('express');
-const cors = require('cors');
-const helmet = require('helmet');
-// const mongoSanitize         = require('express-mongo-sanitize');
-const sanitize = require('mongo-sanitize');
-const cookieParser = require('cookie-parser');
-const { globalLimiter } = require('./src/middleware/rateLimiter.middleware');
-const authRoutes = require('./src/routes/auth.routes');
-const userRoutes = require('./src/routes/user.routes');
-const vehicleRoutes = require('./src/routes/vehicle.routes');
-const sensorRoutes = require('./src/routes/sensor.routes');
-const projectRoutes = require('./src/routes/project.routes');
-
+import { validateEnv } from './src/config/env.js';
+// validateEnv(); 
+import express from 'express';
+import morgan from 'morgan';
+import cors from 'cors';
+import helmet from 'helmet';
+// import mongoSanitize from 'express-mongo-sanitize';
+import sanitize from 'mongo-sanitize';
+import cookieParser from 'cookie-parser';
+import { globalLimiter } from './src/middleware/rateLimiter.middleware.js';
+import authRoutes from './src/routes/auth.routes.js';
+import userRoutes from './src/routes/user.routes.js';
+import vehicleRoutes from './src/routes/vehicle.routes.js';
+import sensorRoutes from './src/routes/sensor.routes.js';
+import projectRoutes from './src/routes/project.routes.js';
+import violationRoutes from './src/routes/violation.routes.js';
 
 const app = express();
 
@@ -33,34 +35,36 @@ const allowedOrigins = [
   process.env.CLIENT_URL,
 ].filter(Boolean);
 
-app.use(cors({
-  origin: function (origin, callback) {
-    if (!origin) return callback(null, true);
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      if (!origin) return callback(null, true);
 
-    if (allowedOrigins.includes(origin) || process.env.NODE_ENV === 'development') {
-      return callback(null, true);
-    }
+      if (allowedOrigins.includes(origin) || process.env.NODE_ENV === 'development') {
+        return callback(null, true);
+      }
 
-    console.error(`CORS Error: Origin not allowed: ${origin}`);
-    return callback(new Error('Not allowed by CORS'));
-  },
-  credentials: true,
-}));
+      console.error(`CORS Error: Origin not allowed: ${origin}`);
+      return callback(new Error('Not allowed by CORS'));
+    },
+    credentials: true,
+  })
+);
 
 // ─── Security headers ────────────────────────────────────────────────────────
 app.use(helmet());
 
 // ─── Body parsing ────────────────────────────────────────────────────────────
-app.use(express.json({ limit: '10kb' }));   // Prevents large payload attacks
+app.use(express.json({ limit: '10kb' })); // Prevents large payload attacks
 app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 app.use(cookieParser());
 
 // ─── Sanitize MongoDB query operators in req.body/params ─────────────────────
 // app.use(mongoSanitize());
 app.use((req, res, next) => {
-  if (req.body) req.body = sanitize(req.body);
-  if (req.params) req.params = sanitize(req.params);
-  if (req.query) req.query = sanitize(req.query);
+  if (req.body) sanitize(req.body);
+  if (req.params) sanitize(req.params);
+  if (req.query) sanitize(req.query);
   next();
 });
 
@@ -75,6 +79,7 @@ app.use('/uploads', express.static('uploads'));
 app.use('/api/vehicles', vehicleRoutes);
 app.use('/api/sensors', sensorRoutes);
 app.use('/api/projects', projectRoutes);
+app.use('/api/violations', violationRoutes);
 
 // ─── 404 handler ─────────────────────────────────────────────────────────────
 app.use((req, res) => {
@@ -95,4 +100,4 @@ app.use((err, req, res, next) => {
   res.status(statusCode).json({ message });
 });
 
-module.exports = app;
+export default app;

@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose'
 
 // Labour sub-document — stores user reference + photo snapshot
 const labourSchema = new mongoose.Schema({
@@ -77,4 +77,4 @@ const projectSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-module.exports = mongoose.model('Project', projectSchema);
+export default mongoose.model('Project', projectSchema);

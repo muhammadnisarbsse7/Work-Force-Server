@@ -1,5 +1,5 @@
-const sensorService = require('../services/sensor.service');
-const asyncHandler = require('../utils/asyncHandler');
+import sensorService from '../services/sensor.service.js';
+import asyncHandler from '../utils/asyncHandler.js';
 
 // ── GET /api/sensors ──────────────────────────────────────────────────────────
 const getAllSensors = asyncHandler(async (req, res) => {
@@ -103,7 +103,7 @@ const toggleStatus = asyncHandler(async (req, res) => {
   });
 });
 
-module.exports = {
+export {
   getAllSensors,
   getSensorById,
   createSensor,

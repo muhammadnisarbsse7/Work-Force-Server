@@ -1,5 +1,4 @@
-const Sensor = require('../models/sensor.model');
-
+import Sensor from '../models/sensor.model.js';
 class SensorService {
 
   // All sensors — DataTable
@@ -45,4 +44,4 @@ class SensorService {
   }
 }
 
-module.exports = new SensorService();
+export default new SensorService();

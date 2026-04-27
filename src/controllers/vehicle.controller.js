@@ -1,5 +1,5 @@
-const vehicleService = require('../services/vehicle.service');
-const asyncHandler = require('../utils/asyncHandler');
+import vehicleService from '../services/vehicle.service.js';
+import asyncHandler from '../utils/asyncHandler.js';
 
 // ── GET /api/vehicles ─────────────────────────────────────────────────────────
 const getAllVehicles = asyncHandler(async (req, res) => {
@@ -158,7 +158,7 @@ const toggleSensor = asyncHandler(async (req, res) => {
   });
 });
 
-module.exports = {
+export {
   getAllVehicles,
   getVehicleById,
   createVehicle,

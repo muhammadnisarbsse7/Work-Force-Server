@@ -1,17 +1,17 @@
 
-const crypto = require('crypto');
-const User = require('../models/auth.model');
-const {
+
+import crypto from 'crypto';
+import User from '../models/auth.model.js';
+
+import {
   generateAccessToken,
   generateRefreshToken,
   verifyToken,
   hashToken,
-} = require('../services/token.service');
-const {
-  sendVerificationEmail,
-  sendPasswordResetEmail,
-} = require('../services/email.service');
-const asyncHandler = require('../utils/asyncHandler');
+} from '../services/token.service.js';
+import { sendVerificationEmail, sendPasswordResetEmail } from '../services/email.service.js';
+import asyncHandler from '../utils/asyncHandler.js';
+
 
 const COOKIE_OPTIONS = {
   httpOnly: true,
@@ -28,7 +28,7 @@ const attachTokenCookies = (res, accessToken, refreshToken) => {
 };
 
 // ─── REGISTER — accepts all 3 steps in one payload ───────────────────────────
-exports.register = asyncHandler(async (req, res) => {
+const register = asyncHandler(async (req, res) => {
   const {
     // Step 1
     name, email, password,
@@ -96,7 +96,7 @@ exports.register = asyncHandler(async (req, res) => {
 });
 
 // ─── LOGIN ────────────────────────────────────────────────────────────────────
-exports.login = asyncHandler(async (req, res) => {
+const login = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
 
   if (!email?.trim() || !password) {
@@ -155,7 +155,7 @@ exports.login = asyncHandler(async (req, res) => {
 });
 
 // ─── FORGOT PASSWORD ──────────────────────────────────────────────────────────
-exports.forgotPassword = asyncHandler(async (req, res) => {
+const forgotPassword = asyncHandler(async (req, res) => {
 
   const { email } = req.body;
 
@@ -189,7 +189,7 @@ exports.forgotPassword = asyncHandler(async (req, res) => {
 });
 
 // ─── VERIFY EMAIL — ─────────────────────────────────────────────────
-exports.verifyEmail = asyncHandler(async (req, res) => {
+const verifyEmail = asyncHandler(async (req, res) => {
   const hashedToken = crypto.createHash('sha256').update(req.params.token).digest('hex');
 
   const user = await User.findOne({
@@ -208,7 +208,7 @@ exports.verifyEmail = asyncHandler(async (req, res) => {
 });
 
 // ─── REFRESH TOKEN — ────────────────────────────────────────────────
-exports.refreshToken = asyncHandler(async (req, res) => {
+const refreshToken = asyncHandler(async (req, res) => {
   const token = req.cookies?.refreshToken;
   if (!token) return res.status(401).json({ message: 'No refresh token.' });
 
@@ -239,7 +239,7 @@ exports.refreshToken = asyncHandler(async (req, res) => {
 });
 
 // ─── VALIDATE RESET TOKEN — accepts GET from email link ───────────────────────
-exports.validateResetToken = asyncHandler(async (req, res) => {
+const validateResetToken = asyncHandler(async (req, res) => {
   const hashedToken = crypto.createHash('sha256').update(req.params.token).digest('hex');
 
   const user = await User.findOne({
@@ -254,7 +254,7 @@ exports.validateResetToken = asyncHandler(async (req, res) => {
 
 // ─── LOGOUT — ───────────────────────────────────────────────────────
 
-exports.logout = asyncHandler(async (req, res) => {
+const logout = asyncHandler(async (req, res) => {
   const token = req.cookies?.refreshToken;
   if (token) {
     try {
@@ -297,7 +297,7 @@ exports.logout = asyncHandler(async (req, res) => {
 // });
 
 // ─── RESET PASSWORD ────────────────────────────────────────────────────────
-exports.resetPassword = asyncHandler(async (req, res) => {
+const resetPassword = asyncHandler(async (req, res) => {
   const { password } = req.body;
   const { token } = req.params;
 
@@ -354,6 +354,18 @@ exports.resetPassword = asyncHandler(async (req, res) => {
 });
 
 // ─── GET ME — ───────────────────────────────────────────────────────
-exports.getMe = asyncHandler(async (req, res) => {
+const getMe = asyncHandler(async (req, res) => {
   res.status(200).json({ user: req.user });
 });
+
+export {
+  register,
+  verifyEmail,
+  login,
+  refreshToken,
+  logout,
+  forgotPassword,
+  resetPassword,
+  validateResetToken,
+  getMe,
+};

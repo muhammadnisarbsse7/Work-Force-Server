@@ -1,17 +1,19 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
 
-const upload = require('../middleware/upload.middleware'); // reuse existing
-const { protect } = require('../middleware/auth.middleware');
-const {
-  getAllVehicles,
+import upload from '../middleware/upload.middleware.js';
+import { protect } from '../middleware/auth.middleware.js';
+
+import{
+    getAllVehicles,
   getVehicleById,
   createVehicle,
   updateVehicle,
   deleteVehicle,
   deleteManyVehicles,
   toggleSensor,
-} = require('../controllers/vehicle.controller');
+} from '../controllers/vehicle.controller.js';
+
 
 // All routes are protected
 // router.use(protect);
@@ -26,4 +28,4 @@ router.put('/:id',  upload.single('vehicleImage'), updateVehicle);
 router.delete('/:id', deleteVehicle);
 router.patch('/:id/toggle-sensor', toggleSensor);
 
-module.exports = router;
+export default router;
