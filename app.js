@@ -55,6 +55,20 @@ app.use(
 // ─── Security headers ────────────────────────────────────────────────────────
 app.use(helmet());
 
+// If you use helmet, update it to allow Cloudinary images:
+app.use(
+  helmet({
+    crossOriginResourcePolicy: { policy: "cross-origin" },
+    contentSecurityPolicy: {
+      directives: {
+        ...helmet.contentSecurityPolicy.getDefaultDirectives(),
+        "img-src": ["'self'", "data:", "https://res.cloudinary.com"],
+      },
+    },
+  })
+);
+
+
 // ─── Body parsing ────────────────────────────────────────────────────────────
 app.use(express.json({ limit: '10kb' })); // Prevents large payload attacks
 app.use(express.urlencoded({ extended: true, limit: '10kb' }));

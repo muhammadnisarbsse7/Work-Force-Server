@@ -28,11 +28,47 @@ const getVehicleById = asyncHandler(async (req, res) => {
 });
 
 // ── POST /api/vehicles ────────────────────────────────────────────────────────
+// const createVehicle = asyncHandler(async (req, res) => {
+//   try {
+//     if (req.file) {
+//       updateData.vehicleImage = req.file.path; // full Cloudinary https:// URL
+//     }
+
+//     const vehicle = await vehicleService.createVehicle({
+//       ...req.body,
+//       vehicleImage,
+//     });
+
+//     res.status(201).json({
+//       success: true,
+//       message: 'Vehicle created successfully',
+//       data: vehicle,
+//     });
+//   } catch (error) {
+//     // Handle E11000 duplicate key error
+//     if (error.code === 11000) {
+//       const field = Object.keys(error.keyPattern)[0];
+//       // Convert camelCase to Title Case (e.g. identificationNumber -> Identification number)
+//       const fieldName = field
+//         .replace(/([A-Z])/g, ' $1')
+//         .replace(/^./, (str) => str.toUpperCase())
+//         .trim();
+
+//       return res.status(400).json({
+//         success: false,
+//         message: `${fieldName} already exists. Please use a different value.`,
+//         field,
+//       });
+//     }
+//     throw error;
+//   }
+// });
+
+// ── POST /api/vehicles ────────────────────────────────────────────────────────
 const createVehicle = asyncHandler(async (req, res) => {
   try {
-    const vehicleImage = req.file
-      ? `/uploads/${req.file.filename}`
-      : '';
+    // multer-storage-cloudinary puts the full Cloudinary URL in req.file.path
+    const vehicleImage = req.file ? req.file.path : '';
 
     const vehicle = await vehicleService.createVehicle({
       ...req.body,
@@ -45,15 +81,12 @@ const createVehicle = asyncHandler(async (req, res) => {
       data: vehicle,
     });
   } catch (error) {
-    // Handle E11000 duplicate key error
     if (error.code === 11000) {
       const field = Object.keys(error.keyPattern)[0];
-      // Convert camelCase to Title Case (e.g. identificationNumber -> Identification number)
       const fieldName = field
         .replace(/([A-Z])/g, ' $1')
         .replace(/^./, (str) => str.toUpperCase())
         .trim();
-
       return res.status(400).json({
         success: false,
         message: `${fieldName} already exists. Please use a different value.`,
@@ -64,12 +97,13 @@ const createVehicle = asyncHandler(async (req, res) => {
   }
 });
 
+
 // ── PUT /api/vehicles/:id ─────────────────────────────────────────────────────
 const updateVehicle = asyncHandler(async (req, res) => {
   try {
     const updateData = { ...req.body };
     if (req.file) {
-      updateData.vehicleImage = `/uploads/${req.file.filename}`;
+      updateData.vehicleImage = req.file.path;
     }
 
     const vehicle = await vehicleService.updateVehicle(req.params.id, updateData);

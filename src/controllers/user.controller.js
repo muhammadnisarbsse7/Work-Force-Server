@@ -32,9 +32,7 @@ const getUserById = asyncHandler(async (req, res) => {
 // ─── POST /api/users ──────────────────────────────────────────────────────────
 // AddUser modal submit
 const createUser = asyncHandler(async (req, res) => {
-  const profilePhoto = req.file
-    ? `/uploads/${req.file.filename}`
-    : '';
+  const profilePhoto = req.file ? req.file.path : ''; // full Cloudinary https:// URL
 
   const user = await userService.createUser({
     ...req.body,
