@@ -145,12 +145,7 @@ const login = asyncHandler(async (req, res) => {
 
   res.status(200).json({
     message: 'Signed in successfully.',
-    user: {
-      id: user._id,
-      name: user.name,
-      email: user.email,
-      city: user.city,
-    },
+    user: user.toAuthJSON(),
   });
 });
 
@@ -204,7 +199,18 @@ const verifyEmail = asyncHandler(async (req, res) => {
   user.emailVerifyTokenExpiry = undefined;
   await user.save({ validateBeforeSave: false });
 
-  res.status(200).json({ message: 'Email verified. You can now sign in.' });
+  // ── Automatic login after verification ────────────────────────────────────
+  const accessToken = generateAccessToken(user._id);
+  const refreshToken = generateRefreshToken(user._id);
+  user.refreshToken = hashToken(refreshToken);
+  await user.save({ validateBeforeSave: false });
+
+  attachTokenCookies(res, accessToken, refreshToken);
+
+  res.status(200).json({
+    message: 'Email verified successfully! You are now signed in.',
+    user: user.toAuthJSON(),
+  });
 });
 
 // ─── REFRESH TOKEN — ────────────────────────────────────────────────
@@ -343,19 +349,23 @@ const resetPassword = asyncHandler(async (req, res) => {
   user.lockUntil = undefined;
   await user.save();
 
-  // ── Clear any auth cookies that might be set ──────────────────────────────
-  // Use the global COOKIE_OPTIONS (which has sameSite: 'lax' and other settings)
-  res.clearCookie('accessToken',  COOKIE_OPTIONS);
-  res.clearCookie('refreshToken', COOKIE_OPTIONS);
+  // ── Automatic login after reset ───────────────────────────────────────────
+  const accessToken = generateAccessToken(user._id);
+  const refreshToken = generateRefreshToken(user._id);
+  user.refreshToken = hashToken(refreshToken);
+  await user.save({ validateBeforeSave: false });
+
+  attachTokenCookies(res, accessToken, refreshToken);
 
   res.status(200).json({
-    message: 'Password reset successful. You can now sign in with your new password.',
+    message: 'Password reset successful. You have been automatically signed in.',
+    user: user.toAuthJSON(),
   });
 });
 
 // ─── GET ME — ───────────────────────────────────────────────────────
 const getMe = asyncHandler(async (req, res) => {
-  res.status(200).json({ user: req.user });
+  res.status(200).json({ user: req.user.toAuthJSON() });
 });
 
 export {

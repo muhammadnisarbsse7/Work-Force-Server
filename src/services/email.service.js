@@ -73,8 +73,8 @@
 import nodemailer from 'nodemailer';
 
 const transporter = nodemailer.createTransport({
-  host:   process.env.SMTP_HOST,
-  port:   Number(process.env.SMTP_PORT) || 587,
+  host: process.env.SMTP_HOST,
+  port: Number(process.env.SMTP_PORT) || 587,
   secure: process.env.SMTP_PORT === '465',
   auth: {
     user: process.env.SMTP_USER,
@@ -110,7 +110,7 @@ const sendVerificationEmail = (to, token) =>
   });
 
 const sendPasswordResetEmail = (to, token) => {
-  const resetUrl  = `${process.env.CLIENT_URL}/reset-password/${token}`;
+  const resetUrl = `${process.env.CLIENT_URL}/reset-password/${token}`;
   const expiresAt = new Date(Date.now() + 10 * 60 * 1000).toLocaleTimeString([], {
     hour: '2-digit', minute: '2-digit',
   });

@@ -260,4 +260,19 @@ authSchema.methods.getBillingData = function () {
   };
 };
 
+authSchema.methods.toAuthJSON = function () {
+  return {
+    id: this._id,
+    name: this.name,
+    email: this.email,
+    city: this.city,
+    street: this.street,
+    isEmailVerified: this.isEmailVerified,
+    billing: this.cardLastFour ? {
+      cardName: this.cardName,
+      cardLastFour: this.cardLastFour,
+    } : null,
+  };
+};
+
 export default mongoose.model('Auth', authSchema);

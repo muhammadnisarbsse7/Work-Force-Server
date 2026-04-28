@@ -15,6 +15,7 @@ import sensorRoutes from './src/routes/sensor.routes.js';
 import projectRoutes from './src/routes/project.routes.js';
 import violationRoutes from './src/routes/violation.routes.js';
 
+
 const app = express();
 
 // ─── CORS ────────────────────────────────────────────────────────────────────
