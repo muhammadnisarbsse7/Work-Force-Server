@@ -1,7 +1,5 @@
-
-
 import crypto from 'crypto';
-import User from '../models/auth.model.js';
+import Auth from '../models/auth.model.js';
 
 import {
   generateAccessToken,
@@ -12,11 +10,10 @@ import {
 import { sendVerificationEmail, sendPasswordResetEmail } from '../services/email.service.js';
 import asyncHandler from '../utils/asyncHandler.js';
 
-
 const COOKIE_OPTIONS = {
   httpOnly: true,
   secure: process.env.NODE_ENV === 'production',
-  sameSite: 'lax',   // 'strict' blocks cookies on cross-port fetch (5173→5000)
+  sameSite: 'lax', // 'strict' blocks cookies on cross-port fetch (5173→5000)
 };
 
 const ACCESS_COOKIE_OPTS = { ...COOKIE_OPTIONS, maxAge: 15 * 60 * 1000 };
@@ -31,15 +28,16 @@ const attachTokenCookies = (res, accessToken, refreshToken) => {
 const register = asyncHandler(async (req, res) => {
   const {
     // Step 1
-    name, email, password,
+    name,
+    email,
+    password,
     // Step 2
-    city, street,
-    // Step 3
-    cardName, cardNumber, expiry, cvv,
+    city,
+    street,
   } = req.body;
 
   // ── Field presence check ──────────────────────────────────────────────────
-  const required = { name, email, password, city, street, cardName, cardNumber, expiry, cvv };
+  const required = { name, email, password, city, street };
   const missing = Object.keys(required).filter((k) => !required[k]?.toString().trim());
   if (missing.length) {
     return res.status(400).json({
@@ -48,30 +46,21 @@ const register = asyncHandler(async (req, res) => {
     });
   }
 
-  // ── Card format validation (basic) ────────────────────────────────────────
-  const rawCard = cardNumber.replace(/\s/g, '');
-  if (!/^\d{16}$/.test(rawCard)) {
-    return res.status(400).json({ message: 'Card number must be 16 digits.' });
-  }
-  if (!/^\d{3,4}$/.test(cvv)) {
-    return res.status(400).json({ message: 'CVV must be 3 or 4 digits.' });
-  }
-  if (!/^(0[1-9]|1[0-2])\/\d{2}$/.test(expiry)) {
-    return res.status(400).json({ message: 'Expiry must be in MM/YY format.' });
-  }
-
   // ── Duplicate check ───────────────────────────────────────────────────────
-  const existing = await User.findOne({ email: email.toLowerCase().trim() });
+  const existing = await Auth.findOne({ email: email.toLowerCase().trim() });
   if (existing) {
     // Generic — prevents email enumeration
     return res.status(400).json({ message: 'Registration failed. Please check your details.' });
   }
 
   // ── Create user ───────────────────────────────────────────────────────────
-  const user = new User({ name, email, password, city, street });
-
-  // Encrypt card data — CVV is validated above and then discarded
-  user.setBillingData({ cardName, cardNumber, expiry });
+  const user = new Auth({
+    name,
+    email,
+    password,
+    city,
+    street,
+  });
 
   // Generate email verification token
   const verifyToken_ = user.createToken('emailVerify');
@@ -103,7 +92,7 @@ const login = asyncHandler(async (req, res) => {
     return res.status(400).json({ message: 'Email and password are required.' });
   }
 
-  const user = await User.findOne({ email: email.toLowerCase().trim() }).select(
+  const user = await Auth.findOne({ email: email.toLowerCase().trim() }).select(
     '+password +loginAttempts +lockUntil'
   );
 
@@ -151,14 +140,13 @@ const login = asyncHandler(async (req, res) => {
 
 // ─── FORGOT PASSWORD ──────────────────────────────────────────────────────────
 const forgotPassword = asyncHandler(async (req, res) => {
-
   const { email } = req.body;
 
   if (!email?.trim()) {
     return res.status(400).json({ message: 'Email address is required.' });
   }
 
-  const user = await User.findOne({ email: email.toLowerCase().trim() });
+  const user = await Auth.findOne({ email: email.toLowerCase().trim() });
 
   // Always return the same response — no enumeration
   const SAFE_RESPONSE = {
@@ -187,7 +175,7 @@ const forgotPassword = asyncHandler(async (req, res) => {
 const verifyEmail = asyncHandler(async (req, res) => {
   const hashedToken = crypto.createHash('sha256').update(req.params.token).digest('hex');
 
-  const user = await User.findOne({
+  const user = await Auth.findOne({
     emailVerifyToken: hashedToken,
     emailVerifyTokenExpiry: { $gt: Date.now() },
   }).select('+emailVerifyToken +emailVerifyTokenExpiry');
@@ -225,7 +213,7 @@ const refreshToken = asyncHandler(async (req, res) => {
     return res.status(401).json({ message: 'Invalid or expired refresh token.' });
   }
 
-  const user = await User.findById(decoded.id).select('+refreshToken');
+  const user = await Auth.findById(decoded.id).select('+refreshToken');
   if (!user || user.refreshToken !== hashToken(token)) {
     if (user) {
       user.refreshToken = undefined;
@@ -248,7 +236,7 @@ const refreshToken = asyncHandler(async (req, res) => {
 const validateResetToken = asyncHandler(async (req, res) => {
   const hashedToken = crypto.createHash('sha256').update(req.params.token).digest('hex');
 
-  const user = await User.findOne({
+  const user = await Auth.findOne({
     passwordResetToken: hashedToken,
     passwordResetTokenExpiry: { $gt: Date.now() },
   });
@@ -265,8 +253,10 @@ const logout = asyncHandler(async (req, res) => {
   if (token) {
     try {
       const decoded = verifyToken(token, 'refresh');
-      await User.findByIdAndUpdate(decoded.id, { $unset: { refreshToken: 1 } });
-    } catch { /* already invalid */ }
+      await Auth.findByIdAndUpdate(decoded.id, { $unset: { refreshToken: 1 } });
+    } catch {
+      /* already invalid */
+    }
   }
 
   res.clearCookie('accessToken', COOKIE_OPTIONS);
@@ -284,7 +274,7 @@ const logout = asyncHandler(async (req, res) => {
 
 //   const hashedToken = crypto.createHash('sha256').update(req.params.token).digest('hex');
 
-//   const user = await User.findOne({
+//   const user = await Auth.findOne({
 //     passwordResetToken:       hashedToken,
 //     passwordResetTokenExpiry: { $gt: Date.now() },
 //   }).select('+passwordResetToken +passwordResetTokenExpiry');
@@ -315,20 +305,19 @@ const resetPassword = asyncHandler(async (req, res) => {
     return res.status(400).json({ message: 'Password must be at least 8 characters.' });
   }
   if (!/[A-Z]/.test(password)) {
-    return res.status(400).json({ message: 'Password must contain at least one uppercase letter.' });
+    return res
+      .status(400)
+      .json({ message: 'Password must contain at least one uppercase letter.' });
   }
   if (!/[0-9]/.test(password)) {
     return res.status(400).json({ message: 'Password must contain at least one number.' });
   }
 
   // ── Hash the raw token from URL to compare with DB ────────────────────────
-  const hashedToken = crypto
-    .createHash('sha256')
-    .update(token)
-    .digest('hex');
+  const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
 
   // ── Find user with matching, non-expired token ────────────────────────────
-  const user = await User.findOne({
+  const user = await Auth.findOne({
     passwordResetToken: hashedToken,
     passwordResetTokenExpiry: { $gt: Date.now() }, // still within 10-min window
   }).select('+passwordResetToken +passwordResetTokenExpiry +refreshToken');
@@ -344,7 +333,7 @@ const resetPassword = asyncHandler(async (req, res) => {
   user.password = password;
   user.passwordResetToken = undefined;
   user.passwordResetTokenExpiry = undefined;
-  user.refreshToken = undefined;  // invalidate all active sessions
+  user.refreshToken = undefined; // invalidate all active sessions
   user.loginAttempts = 0;
   user.lockUntil = undefined;
   await user.save();

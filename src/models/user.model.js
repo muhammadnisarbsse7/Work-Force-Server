@@ -1,4 +1,4 @@
-import mongoose from 'mongoose'
+import mongoose from 'mongoose';
 
 const userSchema = new mongoose.Schema(
   {
@@ -12,12 +12,12 @@ const userSchema = new mongoose.Schema(
       required: [true, 'Phone number is required'],
       trim: true,
     },
-    passportNumber: {
-      type: String,
-      required: [true, 'Passport/ID number is required'],
-      unique: true,
-      trim: true,
-    },
+    // passportNumber: {
+    //   type: String,
+    //   required: [true, 'Passport/ID number is required'],
+    //   unique: true,
+    //   trim: true,
+    // },
     dateOfBirth: {
       type: String,
       required: [true, 'Date of birth is required'],
