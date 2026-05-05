@@ -14,9 +14,24 @@ import vehicleRoutes from './src/routes/vehicle.routes.js';
 import sensorRoutes from './src/routes/sensor.routes.js';
 import projectRoutes from './src/routes/project.routes.js';
 import violationRoutes from './src/routes/violation.routes.js';
+import subscriptionRoutes from './src/routes/subscription.routes.js';
+
 
 
 const app = express();
+
+// Trust proxy (required for rate-limiting through ngrok/load-balancers)
+app.set('trust proxy', 1);
+
+// Stripe needs raw body to verify webhook signature
+app.use('/api/subscriptions/webhook',
+  express.raw({ type: 'application/json' }),
+  // (req, res, next) => {
+  //   // Make raw body available
+  //   req.rawBody = req.body;
+  //   next();
+  // }
+);
 
 // ─── CORS ────────────────────────────────────────────────────────────────────
 // app.use(cors({
@@ -95,6 +110,9 @@ app.use('/api/vehicles', vehicleRoutes);
 app.use('/api/sensors', sensorRoutes);
 app.use('/api/projects', projectRoutes);
 app.use('/api/violations', violationRoutes);
+
+app.use('/api/subscriptions', subscriptionRoutes);
+
 
 // ─── 404 handler ─────────────────────────────────────────────────────────────
 app.use((req, res) => {
