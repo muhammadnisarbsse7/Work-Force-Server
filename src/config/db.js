@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 const connectDB = async () => {
   try {
     const conn = await mongoose.connect(process.env.MONGO_URI, {
+      dbName:process.env.MONGO_NAME,
       // Prevents connection string injection via user input
       serverSelectionTimeoutMS: 5000,
     });
