@@ -1,8 +1,8 @@
 import userService from '../services/user.service.js';
+import sensorService from '../services/sensor.service.js';
 import asyncHandler from '../utils/asyncHandler.js';
 
 // ─── GET /api/users ───────────────────────────────────────────────────────────
-// Users DataTable - get all users
 const getAllUsers = asyncHandler(async (req, res) => {
   const users = await userService.getAllUsers();
   res.status(200).json({
@@ -13,7 +13,6 @@ const getAllUsers = asyncHandler(async (req, res) => {
 });
 
 // ─── GET /api/users/:id ───────────────────────────────────────────────────────
-// UserDetail page
 const getUserById = asyncHandler(async (req, res) => {
   const user = await userService.getUserById(req.params.id);
   if (!user) {
@@ -30,14 +29,35 @@ const getUserById = asyncHandler(async (req, res) => {
 });
 
 // ─── POST /api/users ──────────────────────────────────────────────────────────
-// AddUser modal submit
 const createUser = asyncHandler(async (req, res) => {
-  const profilePhoto = req.file ? req.file.path : ''; // full Cloudinary https:// URL
+  const { email, assignedSensor } = req.body;
 
+  // Check if email already exists
+  const existingUser = await userService.getUserByEmail(email);
+  if (existingUser) {
+    return res.status(409).json({
+      success: false,
+      message: 'User with this email already exists',
+    });
+  }
+
+  const profilePhoto = req.file ? req.file.path : '';
+
+  // Create the user
   const user = await userService.createUser({
     ...req.body,
     profilePhoto,
+    sensorId: assignedSensor || null, // Store sensor ID in user
   });
+
+  // If sensor is assigned, update the sensor
+  if (assignedSensor && user) {
+    // Update sensor: set isconnected to true and attach user id
+    await sensorService.updateSensor(assignedSensor, {
+      isconnected: true,
+      attachedUser: user._id,
+    });
+  }
 
   res.status(201).json({
     success: true,
@@ -47,19 +67,56 @@ const createUser = asyncHandler(async (req, res) => {
 });
 
 // ─── PUT /api/users/:id ───────────────────────────────────────────────────────
-// EditUser modal submit
 const updateUser = asyncHandler(async (req, res) => {
-  // Only override photo if a new file was uploaded
-  const updateData = { ...req.body };
-  if (req.file) {
-    updateData.profilePhoto = `/uploads/${req.file.filename}`;
+  const { email, assignedSensor } = req.body;
+  const userId = req.params.id;
+
+  // Check if email already exists (excluding current user)
+  if (email) {
+    const existingUser = await userService.getUserByEmail(email);
+    if (existingUser && existingUser._id.toString() !== userId) {
+      return res.status(409).json({
+        success: false,
+        message: 'User with this email already exists',
+      });
+    }
   }
 
-  const user = await userService.updateUser(req.params.id, updateData);
+  // Get old user data to handle sensor changes
+  const oldUser = await userService.getUserById(userId);
+
+  const updateData = { ...req.body };
+  if (req.file) {
+    updateData.profilePhoto = req.file.path;
+  }
+
+  // Update sensor ID in user if assignedSensor is provided
+  if (assignedSensor) {
+    updateData.sensorId = assignedSensor;
+  }
+
+  const user = await userService.updateUser(userId, updateData);
   if (!user) {
     return res.status(404).json({
       success: false,
       message: 'User not found',
+    });
+  }
+
+  // Handle sensor assignment changes
+  if (assignedSensor && assignedSensor !== oldUser?.sensorId?.toString()) {
+    // Remove old sensor assignment if exists
+    if (oldUser?.sensorId) {
+      await sensorService.updateSensor(oldUser.sensorId, {
+        isconnected: false,
+        attachedUser: null,
+      });
+    }
+
+    // Assign new sensor
+    await sensorService.updateSensor(assignedSensor, {
+      isconnected: true,
+      attachedUser: user._id,
     });
   }
 
@@ -71,10 +128,20 @@ const updateUser = asyncHandler(async (req, res) => {
 });
 
 // ─── DELETE /api/users/:id ────────────────────────────────────────────────────
-// Single row delete (DeleteIcon in Actions column)
 const deleteUser = asyncHandler(async (req, res) => {
-  const user = await userService.deleteUser(req.params.id);
-  if (!user) {
+  // Get user to find assigned sensor
+  const user = await userService.getUserById(req.params.id);
+
+  if (user && user.sensorId) {
+    // Update sensor: set isconnected to false and remove attachedUser
+    await sensorService.updateSensor(user.sensorId, {
+      isconnected: false,
+      attachedUser: null,
+    });
+  }
+
+  const deletedUser = await userService.deleteUser(req.params.id);
+  if (!deletedUser) {
     return res.status(404).json({
       success: false,
       message: 'User not found',
@@ -89,7 +156,6 @@ const deleteUser = asyncHandler(async (req, res) => {
 });
 
 // ─── DELETE /api/users/bulk-delete ───────────────────────────────────────────
-// Bulk delete from DataTable header DeleteIcon (selected rows)
 const deleteManyUsers = asyncHandler(async (req, res) => {
   const { ids } = req.body;
 
@@ -98,6 +164,19 @@ const deleteManyUsers = asyncHandler(async (req, res) => {
       success: false,
       message: 'Please provide an array of user IDs',
     });
+  }
+
+  // Get all users to update their sensors
+  const users = await userService.getUsersByIds(ids);
+
+  // Update all assigned sensors
+  for (const user of users) {
+    if (user.sensorId) {
+      await sensorService.updateSensor(user.sensorId, {
+        isconnected: false,
+        attachedUser: null,
+      });
+    }
   }
 
   await userService.deleteManyUsers(ids);
@@ -109,11 +188,4 @@ const deleteManyUsers = asyncHandler(async (req, res) => {
   });
 });
 
-export {
-  getAllUsers,
-  getUserById,
-  createUser,
-  updateUser,
-  deleteUser,
-  deleteManyUsers,
-};
+export { getAllUsers, getUserById, createUser, updateUser, deleteUser, deleteManyUsers };

@@ -1,7 +1,6 @@
 import Project from '../models/project.model.js';
 
 class ProjectService {
-
   // All projects — DataTable
   async getAllProjects() {
     return await Project.find().sort({ createdAt: -1 });
@@ -22,7 +21,7 @@ class ProjectService {
     return await Project.findByIdAndUpdate(
       id,
       { $set: data },
-      { new: true, runValidators: true }
+      { returnDocument: 'after', runValidators: true }
     );
   }
 

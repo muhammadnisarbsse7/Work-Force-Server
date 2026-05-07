@@ -1,33 +1,32 @@
+// violationRoutes.js
 import express from 'express';
-const router  = express.Router();
-
-import { protect } from '../middleware/auth.middleware.js';
-
-import{
-  getUserViolations,
-  getVehicleViolations,
-  getAllViolations,
+// import {
+//   addViolation,
+//   getViolations,
+//   getViolationById,
+//   updateViolation,
+//   resolveViolation,
+//   deleteViolation,
+//   getViolationStats,
+// } from '../controllers/violationController.js';
+import {
+  addViolation,
+  getViolations,
   getViolationById,
-  createViolation,
   updateViolation,
-  updateReportStatus,
+  resolveViolation,
   deleteViolation,
-  deleteManyViolations,
+  getViolationStats,
 } from '../controllers/violation.controller.js';
 
+const router = express.Router();
 
-// router.use(protect);
-
-// ── IMPORTANT — specific routes before /:id ───────────────────────────────────
-router.delete('/bulk-delete',    deleteManyViolations);
-router.get('/users',             getUserViolations);     // UsersViolations DataTable
-router.get('/vehicles',          getVehicleViolations);  // VehiclesViolations DataTable
-
-router.get('/',                  getAllViolations);
-router.get('/:id',               getViolationById);
-router.post('/',                 createViolation);
-router.put('/:id',               updateViolation);
-router.patch('/:id/report',      updateReportStatus);    // EditReport buttons
-router.delete('/:id',            deleteViolation);
+router.post('/violations', addViolation);
+router.get('/violations', getViolations);
+router.get('/violations/stats', getViolationStats);
+router.get('/violations/:id', getViolationById);
+router.put('/violations/:id', updateViolation);
+router.patch('/violations/:id/resolve', resolveViolation);
+router.delete('/violations/:id', deleteViolation);
 
 export default router;

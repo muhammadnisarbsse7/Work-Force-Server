@@ -1,17 +1,14 @@
 import Violation from '../models/violation.model.js';
 
 class ViolationService {
-
   // All user violations — UsersViolations DataTable
   async getUserViolations() {
-    return await Violation.find({ violationCategory: 'user' })
-      .sort({ createdAt: -1 });
+    return await Violation.find({ violationCategory: 'user' }).sort({ createdAt: -1 });
   }
 
   // All vehicle violations — VehiclesViolations DataTable
   async getVehicleViolations() {
-    return await Violation.find({ violationCategory: 'vehicle' })
-      .sort({ createdAt: -1 });
+    return await Violation.find({ violationCategory: 'vehicle' }).sort({ createdAt: -1 });
   }
 
   // All violations — dashboard/reports summary
@@ -34,7 +31,7 @@ class ViolationService {
     return await Violation.findByIdAndUpdate(
       id,
       { $set: data },
-      { new: true, runValidators: true }
+      { returnDocument: 'after', runValidators: true }
     );
   }
 

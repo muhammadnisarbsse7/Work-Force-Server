@@ -1,37 +1,43 @@
-import mongoose from 'mongoose'
+import mongoose from 'mongoose';
 
 // Labour sub-document — stores user reference + photo snapshot
-const labourSchema = new mongoose.Schema({
-  userId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',       // references your existing User model
+const labourSchema = new mongoose.Schema(
+  {
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User', // references your existing User model
+    },
+    label: {
+      type: String, // display name e.g. "Asif Zulfiqar"
+      required: true,
+    },
+    value: {
+      type: String, // react-select value e.g. "asif"
+      required: true,
+    },
+    image: {
+      type: String, // profile photo URL (optional snapshot)
+      default: '',
+    },
   },
-  label: {
-    type: String,      // display name e.g. "Asif Zulfiqar"
-    required: true,
-  },
-  value: {
-    type: String,      // react-select value e.g. "asif"
-    required: true,
-  },
-  image: {
-    type: String,      // profile photo URL (optional snapshot)
-    default: '',
-  },
-}, { _id: false });
+  { _id: false }
+);
 
 // GeoFencing polygon coordinates from react-leaflet-draw
-const geoFenceSchema = new mongoose.Schema({
-  type: {
-    type: String,
-    enum: ['Polygon'],
-    default: 'Polygon',
+const geoFenceSchema = new mongoose.Schema(
+  {
+    type: {
+      type: String,
+      enum: ['Polygon'],
+      default: 'Polygon',
+    },
+    coordinates: {
+      type: [[[Number]]], // GeoJSON Polygon format [[lng,lat], ...]
+      default: [],
+    },
   },
-  coordinates: {
-    type: [[[Number]]],   // GeoJSON Polygon format [[lng,lat], ...]
-    default: [],
-  },
-}, { _id: false });
+  { _id: false }
+);
 
 const projectSchema = new mongoose.Schema(
   {
@@ -57,17 +63,19 @@ const projectSchema = new mongoose.Schema(
       required: [true, 'Location is required'],
       trim: true,
     },
-    labours: {
-      type: [labourSchema],
-      default: [],
-    },
+    labours: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+      },
+    ],
     geoFence: {
       type: geoFenceSchema,
       default: null,
     },
     workforceCount: {
       type: Number,
-      default: 0,     // CircularProgressBar percentage
+      default: 0, // CircularProgressBar percentage
     },
     isActive: {
       type: Boolean,

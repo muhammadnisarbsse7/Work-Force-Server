@@ -2,22 +2,43 @@ import mongoose from 'mongoose';
 
 const userSchema = new mongoose.Schema(
   {
+    owner: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Auth',
+      required: true,
+    },
+    sensorId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Sensor',
+    },
+    assignedProject: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Project',
+      default: null,
+    },
+    attachedVehicle: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Vehicle',
+      default: null,
+    },
     fullName: {
       type: String,
       required: [true, 'Full name is required'],
       trim: true,
+    },
+    email: {
+      type: String,
+      required: [true, 'Email is required'],
+      unique: true,
+      lowercase: true,
+      trim: true,
+      match: [/^\S+@\S+\.\S+$/, 'Invalid email format'],
     },
     phoneNumber: {
       type: String,
       required: [true, 'Phone number is required'],
       trim: true,
     },
-    // passportNumber: {
-    //   type: String,
-    //   required: [true, 'Passport/ID number is required'],
-    //   unique: true,
-    //   trim: true,
-    // },
     dateOfBirth: {
       type: String,
       required: [true, 'Date of birth is required'],
@@ -56,6 +77,14 @@ const userSchema = new mongoose.Schema(
     isActive: {
       type: Boolean,
       default: true,
+    },
+    isProjectAssigned: {
+      type: Boolean,
+      default: false,
+    },
+    isVehicleAssigned: {
+      type: Boolean,
+      default: false,
     },
   },
   { timestamps: true }

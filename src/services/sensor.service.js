@@ -1,6 +1,5 @@
 import Sensor from '../models/sensor.model.js';
 class SensorService {
-
   // All sensors — DataTable
   async getAllSensors() {
     return await Sensor.find().sort({ createdAt: -1 });
@@ -21,7 +20,7 @@ class SensorService {
     return await Sensor.findByIdAndUpdate(
       id,
       { $set: data },
-      { new: true, runValidators: true }
+      { returnDocument: 'after', runValidators: true }
     );
   }
 

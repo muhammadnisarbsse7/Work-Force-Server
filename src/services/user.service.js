@@ -1,6 +1,6 @@
 import User from '../models/user.model.js';
-class UserService {
 
+class UserService {
   // Get all users — sorted newest first
   async getAllUsers() {
     return await User.find().sort({ createdAt: -1 });
@@ -9,6 +9,16 @@ class UserService {
   // Get single user by MongoDB _id
   async getUserById(id) {
     return await User.findById(id);
+  }
+
+  // Get user by email
+  async getUserByEmail(email) {
+    return await User.findOne({ email });
+  }
+
+  // Get users by multiple IDs
+  async getUsersByIds(ids) {
+    return await User.find({ _id: { $in: ids } });
   }
 
   // Create new user
@@ -21,7 +31,7 @@ class UserService {
     return await User.findByIdAndUpdate(
       id,
       { $set: data },
-      { new: true, runValidators: true }
+      { returnDocument: 'after', runValidators: true }
     );
   }
 

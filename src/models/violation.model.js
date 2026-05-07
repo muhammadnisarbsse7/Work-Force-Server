@@ -1,93 +1,87 @@
-import mongoose from 'mongoose'
+import mongoose from 'mongoose';
 
 const violationSchema = new mongoose.Schema(
   {
-    // ── Who/What violated ──────────────────────────────────────────────
+    // Category to differentiate between user and vehicle violations
     violationCategory: {
       type: String,
-      enum: ['user', 'vehicle'],   // drives which DataTable shows it
-      required: [true, 'Violation category is required'],
+      enum: ['user', 'vehicle'],
+      required: true,
     },
 
+    // Common fields for both user and vehicle violations
     violationType: {
       type: String,
-      required: [true, 'Violation type is required'],
-      // User types:    Speeding | Illegal Parking | No Helmet
-      // Vehicle types: Out of Assigned Area | Speeding | Illegal Parking
+      required: true,
     },
 
     dateTime: {
+      type: Date,
+      required: true,
+    },
+
+    severity: {
       type: String,
-      required: [true, 'Date and time is required'],
+      enum: ['low', 'medium', 'high'],
+      required: true,
+    },
+
+    // User-specific fields
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: function () {
+        return this.violationCategory === 'user';
+      },
     },
 
     workforce: {
       type: String,
-      required: [true, 'Workforce is required'],
-      trim: true,
-    },
-
-    contractor: {
-      type: String,
-      required: [true, 'Contractor is required'],
-      trim: true,
     },
 
     nationality: {
       type: String,
-      required: [true, 'Nationality is required'],
+    },
+
+    // Vehicle-specific fields
+    vehicle: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Vehicle',
+      required: function () {
+        return this.violationCategory === 'vehicle';
+      },
+    },
+
+    contractor: {
+      type: String,
     },
 
     plateNumber: {
       type: String,
-      required: [true, 'Plate number is required'],
-      trim: true,
     },
 
-    // ── GeoFence violation details ─────────────────────────────────────
-    // Triggered automatically when user/vehicle exits assigned geofence
-    triggeredByGeoFence: {
+    // Status tracking
+    resolved: {
       type: Boolean,
-      default: false,   // true = auto-detected | false = manually added
+      default: false,
     },
 
-    geoFenceCoordinates: {
-      type: {
-        type: String,
-        enum: ['Point'],
-        default: 'Point',
-      },
-      coordinates: {
-        type: [Number],   // [longitude, latitude] — GeoJSON format
-        default: [],
-      },
-    },
-
-    // ── Report review ──────────────────────────────────────────────────
-    reportStatus: {
-      type: String,
-      enum: ['pending', 'confirmed', 'false'],
-      default: 'pending',
-    },
-
-    reportComment: {
-      type: String,
-      default: '',        // admin comment from EditReport textarea
-    },
-
-    // ── Linked refs (optional but useful for filtering) ────────────────
-    userId: {
+    resolvedAt: Date,
+    resolvedBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
-      default: null,
     },
-    vehicleId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Vehicle',
-      default: null,
-    },
+
+    notes: String,
   },
   { timestamps: true }
 );
+
+// Indexes for faster queries
+violationSchema.index({ violationCategory: 1, dateTime: -1 });
+violationSchema.index({ user: 1, dateTime: -1 });
+violationSchema.index({ vehicle: 1, dateTime: -1 });
+violationSchema.index({ severity: 1 });
+violationSchema.index({ resolved: 1 });
 
 export default mongoose.model('Violation', violationSchema);

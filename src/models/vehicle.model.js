@@ -1,7 +1,19 @@
-import mongoose from 'mongoose'
+import mongoose from 'mongoose';
 
 const vehicleSchema = new mongoose.Schema(
   {
+    attachedSensor: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Sensor',
+      required: false,
+      default: null,
+    },
+    attachedUser: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: false,
+      default: null,
+    },
     vehicleName: {
       type: String,
       required: [true, 'Vehicle name is required'],
@@ -24,10 +36,6 @@ const vehicleSchema = new mongoose.Schema(
       unique: true,
       trim: true,
     },
-    project: {
-      type: String,
-      required: [true, 'Project is required'],
-    },
     color: {
       type: String,
       required: [true, 'Color is required'],
@@ -42,11 +50,11 @@ const vehicleSchema = new mongoose.Schema(
     },
     sensorActive: {
       type: Boolean,
-      default: false,       // ToggleButton state in VehicleDetail
+      default: false,
     },
     vehicleImage: {
       type: String,
-      default: '',          // stored as /uploads/filename.jpg
+      default: '',
     },
     isActive: {
       type: Boolean,
@@ -55,5 +63,7 @@ const vehicleSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+vehicleSchema.index({ licensePlateNumber: 1, brand: 1 }, { unique: true });
 
 export default mongoose.model('Vehicle', vehicleSchema);

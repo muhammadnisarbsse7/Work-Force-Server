@@ -1,5 +1,7 @@
 import sensorService from '../services/sensor.service.js';
+import { getSensorByNameAndOwner, getSensorByUniqueId } from '../services/sensorService.service.js';
 import asyncHandler from '../utils/asyncHandler.js';
+// import { getSensorByUniqueId, getSensorByNameAndOwner } from '../services/sensor.service.js'; // Fixed: removed extra '.service'
 
 // ── GET /api/sensors ──────────────────────────────────────────────────────────
 const getAllSensors = asyncHandler(async (req, res) => {
@@ -29,7 +31,29 @@ const getSensorById = asyncHandler(async (req, res) => {
 
 // ── POST /api/sensors ─────────────────────────────────────────────────────────
 const createSensor = asyncHandler(async (req, res) => {
+  const { uniqueId, sensorName } = req.body;
+
+  // Check if sensor with same uniqueId already exists
+  const existingSensorByUniqueId = await getSensorByUniqueId(uniqueId);
+  if (existingSensorByUniqueId) {
+    return res.status(409).json({
+      success: false,
+      message: 'Sensor with this Unique ID already exists',
+    });
+  }
+
+  // Optional: Check if sensor with same name exists for the same owner
+  const existingSensorByName = await getSensorByNameAndOwner(sensorName, req.body.owner);
+  if (existingSensorByName) {
+    return res.status(409).json({
+      success: false,
+      message: 'Sensor with this name already exists for this user',
+    });
+  }
+
+  // If no duplicates found, create the sensor
   const sensor = await sensorService.createSensor(req.body);
+
   res.status(201).json({
     success: true,
     message: 'Sensor created successfully',
@@ -39,7 +63,33 @@ const createSensor = asyncHandler(async (req, res) => {
 
 // ── PUT /api/sensors/:id ──────────────────────────────────────────────────────
 const updateSensor = asyncHandler(async (req, res) => {
-  const sensor = await sensorService.updateSensor(req.params.id, req.body);
+  // Also add duplicate check for update
+  const { uniqueId, sensorName } = req.body;
+  const sensorId = req.params.id;
+
+  // Check if another sensor (not the current one) has the same uniqueId
+  if (uniqueId) {
+    const existingSensorByUniqueId = await getSensorByUniqueId(uniqueId);
+    if (existingSensorByUniqueId && existingSensorByUniqueId._id.toString() !== sensorId) {
+      return res.status(409).json({
+        success: false,
+        message: 'Sensor with this Unique ID already exists',
+      });
+    }
+  }
+
+  // Check if another sensor (not the current one) has the same name for this owner
+  if (sensorName && req.body.owner) {
+    const existingSensorByName = await getSensorByNameAndOwner(sensorName, req.body.owner);
+    if (existingSensorByName && existingSensorByName._id.toString() !== sensorId) {
+      return res.status(409).json({
+        success: false,
+        message: 'Sensor with this name already exists for this user',
+      });
+    }
+  }
+
+  const sensor = await sensorService.updateSensor(sensorId, req.body);
   if (!sensor) {
     return res.status(404).json({
       success: false,
@@ -87,7 +137,6 @@ const deleteManySensors = asyncHandler(async (req, res) => {
 });
 
 // ── PATCH /api/sensors/:id/toggle-status ─────────────────────────────────────
-// ToggleButton in each DataTable row
 const toggleStatus = asyncHandler(async (req, res) => {
   const sensor = await sensorService.toggleStatus(req.params.id);
   if (!sensor) {

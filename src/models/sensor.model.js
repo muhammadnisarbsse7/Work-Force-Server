@@ -1,39 +1,43 @@
-import mongoose from 'mongoose'
+import mongoose from 'mongoose';
 
 const sensorSchema = new mongoose.Schema(
   {
+    owner: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Auth',
+      required: true,
+    },
+    attachedUser: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+    },
+    attachedVehicle: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Vehicle',
+    },
     sensorName: {
       type: String,
       required: [true, 'Sensor name is required'],
       trim: true,
     },
-    topic: {
+    type: {
       type: String,
-      required: [true, 'Topic is required'],
-      enum: ['Temperature', 'Humidity'],
+      required: [true, 'Type is required'],
+      enum: ['Temperature', 'Humidity', 'geolocation'],
     },
-    ip: {
+    uniqueId: {
       type: String,
-      required: [true, 'IP address is required'],
+      required: [true, 'Unique ID is required'],
       trim: true,
     },
-    port: {
-      type: String,
-      required: [true, 'Port is required'],
+    isconnected: {
+      type: Boolean,
+      default: false,
     },
-    url: {
-      type: String,
-      required: [true, 'URL is required'],
-      trim: true,
-    },
-    location: {
-      type: String,
-      required: [true, 'Location is required'],
-      trim: true,
-    },
+
     isActive: {
       type: Boolean,
-      default: false,   // ToggleButton status in DataTable
+      default: false, // ToggleButton status in DataTable
     },
   },
   { timestamps: true }

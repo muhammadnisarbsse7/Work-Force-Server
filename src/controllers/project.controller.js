@@ -1,3 +1,4 @@
+import User from '../models/user.model.js';
 import projectService from '../services/project.service.js';
 import asyncHandler from '../utils/asyncHandler.js';
 
@@ -30,29 +31,34 @@ const getProjectById = asyncHandler(async (req, res) => {
 // ── POST /api/projects ────────────────────────────────────────────────────────
 // AddProject page — JSON body (no file upload)
 const createProject = asyncHandler(async (req, res) => {
-  const {
-    projectName,
-    startDate,
-    dueDate,
-    projectDescription,
-    location,
-    labours,    // array from react-select: [{ label, value }]
-    geoFence,   // polygon from react-leaflet-draw
-  } = req.body;
+  const { projectName, startDate, dueDate, projectDescription, location, labours, geoFence } =
+    req.body;
 
-  // workforceCount = number of labours assigned
-  const workforceCount = labours?.length || 0;
+  const userIds = labours?.map((u) => u.value) || [];
+  const workforceCount = userIds.length;
 
+  // 1. Create Project
   const project = await projectService.createProject({
     projectName,
     startDate,
     dueDate,
     projectDescription,
     location,
-    labours: labours || [],
+    labours: userIds,
     geoFence: geoFence || null,
     workforceCount,
   });
+
+  // 2. Assign users
+  if (userIds.length > 0) {
+    await User.updateMany(
+      { _id: { $in: userIds } },
+      {
+        assignedProject: project._id,
+        isProjectAssigned: true,
+      }
+    );
+  }
 
   res.status(201).json({
     success: true,
@@ -67,7 +73,8 @@ const updateProject = asyncHandler(async (req, res) => {
 
   // Recalculate workforceCount if labours changed
   if (req.body.labours) {
-    updateData.workforceCount = req.body.labours.length;
+    const userIds = req.body.labours.map((l) => l.value);
+    updateData.workforceCount = userIds.length;
   }
 
   const project = await projectService.updateProject(req.params.id, updateData);
