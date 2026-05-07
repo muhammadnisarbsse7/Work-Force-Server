@@ -15,6 +15,7 @@ import sensorRoutes from './src/routes/sensor.routes.js';
 import projectRoutes from './src/routes/project.routes.js';
 import violationRoutes from './src/routes/violation.routes.js';
 import subscriptionRoutes from './src/routes/subscription.routes.js';
+import transactionRoutes from './src/routes/transaction.routes.js';
 
 
 
@@ -112,6 +113,8 @@ app.use('/api/projects', projectRoutes);
 app.use('/api/violations', violationRoutes);
 
 app.use('/api/subscriptions', subscriptionRoutes);
+app.use('/api/transactions', transactionRoutes);
+
 
 
 // ─── 404 handler ─────────────────────────────────────────────────────────────
