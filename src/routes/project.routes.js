@@ -11,7 +11,7 @@ import {
 } from '../controllers/project.controller.js';
 
 // All routes protected
-// router.use(protect);
+router.use(protect);
 
 // IMPORTANT — bulk-delete BEFORE /:id to avoid route conflict
 router.delete('/bulk-delete', deleteManyProjects);

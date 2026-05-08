@@ -2,7 +2,7 @@ import express from 'express';
 const router = express.Router();
 
 import { protect } from '../middleware/auth.middleware.js';
-import{
+import {
   getAllSensors,
   getSensorById,
   createSensor,
@@ -12,23 +12,15 @@ import{
   toggleStatus,
 } from '../controllers/sensor.controller.js';
 
-
-
-
-
-
-
-
-
 // All routes protected
-// router.use(protect);
+router.use(protect);
 
 // IMPORTANT — bulk-delete before /:id to avoid route conflict
 router.delete('/bulk-delete', deleteManySensors);
 
-router.get('/',    getAllSensors);
+router.get('/', getAllSensors);
 router.get('/:id', getSensorById);
-router.post('/',   createSensor);       // JSON body — no file upload needed
+router.post('/', createSensor); // JSON body — no file upload needed
 router.put('/:id', updateSensor);
 router.delete('/:id', deleteSensor);
 router.patch('/:id/toggle-status', toggleStatus);

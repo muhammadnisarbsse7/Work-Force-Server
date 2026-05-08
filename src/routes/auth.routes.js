@@ -10,9 +10,12 @@ import {
   resetPassword,
   validateResetToken,
   getMe,
+  addManager,
+  deleteManager,
+  updateManagerPassword,
 } from '../controllers/auth.controllers.js';
 
-import { protect } from '../middleware/auth.middleware.js';
+import { protect, authorize } from '../middleware/auth.middleware.js';
 // const { authLimiter } = require('../middleware/rateLimiter.middleware');
 
 //
@@ -28,7 +31,12 @@ router.get('/verify-email/:token', verifyEmail);
 router.post('/refresh-token', refreshToken);
 router.post('/logout', logout);
 
-// Protected route example
+// Protected routes
 router.get('/me', protect, getMe);
+
+// Admin-only routes
+router.post('/add-manager', protect, authorize('admin'), addManager);
+router.delete('/manager/:id', protect, authorize('admin'), deleteManager);
+router.patch('/manager/:id/password', protect, authorize('admin'), updateManagerPassword);
 
 export default router;

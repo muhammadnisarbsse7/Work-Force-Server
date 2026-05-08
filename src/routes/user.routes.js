@@ -13,7 +13,7 @@ import {
 } from '../controllers/user.controller.js';
 
 // ─── All routes protected ─────────────────────────────────────────────────────
-// router.use(protect);
+router.use(protect);
 
 // ─── IMPORTANT: bulk-delete before /:id to avoid conflict ────────────────────
 router.delete('/bulk-delete', deleteManyUsers);

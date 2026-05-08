@@ -16,7 +16,7 @@ import{
 
 
 // All routes are protected
-// router.use(protect);
+router.use(protect);
 
 // IMPORTANT — bulk-delete before /:id to avoid route conflict
 router.delete('/bulk-delete', deleteManyVehicles);

@@ -199,6 +199,18 @@ const authSchema = new mongoose.Schema(
     refreshToken: { type: String, select: false },
     loginAttempts: { type: Number, default: 0, select: false },
     lockUntil: { type: Date, select: false },
+
+    // ── Roles & Hierarchy ─────────────────────────────────────────────────────
+    role: {
+      type: String,
+      enum: ['admin', 'manager', 'user'],
+      default: 'admin',
+    },
+    creatorId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Auth',
+      default: null,
+    },
   },
   { timestamps: true }
 );
@@ -267,6 +279,8 @@ authSchema.methods.toAuthJSON = function () {
     email: this.email,
     city: this.city,
     street: this.street,
+    role: this.role || 'admin', // Ensure role exists even for old records
+    creatorId: this.creatorId,
     isEmailVerified: this.isEmailVerified,
     billing: this.cardLastFour ? {
       cardName: this.cardName,

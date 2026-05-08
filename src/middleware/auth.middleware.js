@@ -4,7 +4,7 @@ import User from '../models/auth.model.js';
 const protect = async (req, res, next) => {
   try {
     // Read from HttpOnly cookie only — never Authorization header for web apps
-    const token = req.cookies?.accessToken;
+    const token = req.cookies?.['workforce-token'];
 
     if (!token) {
       return res.status(401).json({ message: 'Not authenticated. Please log in.' });
@@ -32,4 +32,15 @@ const protect = async (req, res, next) => {
   }
 };
 
-export { protect };
+const authorize = (...roles) => {
+  return (req, res, next) => {
+    if (!roles.includes(req.user.role)) {
+      return res.status(403).json({
+        message: `Role (${req.user.role}) is not authorized to access this resource`,
+      });
+    }
+    next();
+  };
+};
+
+export { protect, authorize };

@@ -20,8 +20,8 @@ const ACCESS_COOKIE_OPTS = { ...COOKIE_OPTIONS, maxAge: 15 * 60 * 1000 };
 const REFRESH_COOKIE_OPTS = { ...COOKIE_OPTIONS, maxAge: 7 * 24 * 60 * 60 * 1000 };
 
 const attachTokenCookies = (res, accessToken, refreshToken) => {
-  res.cookie('accessToken', accessToken, ACCESS_COOKIE_OPTS);
-  res.cookie('refreshToken', refreshToken, REFRESH_COOKIE_OPTS);
+  res.cookie('workforce-token', accessToken, ACCESS_COOKIE_OPTS);
+  res.cookie('workforce-refresh-token', refreshToken, REFRESH_COOKIE_OPTS);
 };
 
 // ─── REGISTER — accepts all 3 steps in one payload ───────────────────────────
@@ -203,7 +203,7 @@ const verifyEmail = asyncHandler(async (req, res) => {
 
 // ─── REFRESH TOKEN — ────────────────────────────────────────────────
 const refreshToken = asyncHandler(async (req, res) => {
-  const token = req.cookies?.refreshToken;
+  const token = req.cookies?.['workforce-refresh-token'];
   if (!token) return res.status(401).json({ message: 'No refresh token.' });
 
   let decoded;
@@ -249,7 +249,7 @@ const validateResetToken = asyncHandler(async (req, res) => {
 // ─── LOGOUT — ───────────────────────────────────────────────────────
 
 const logout = asyncHandler(async (req, res) => {
-  const token = req.cookies?.refreshToken;
+  const token = req.cookies?.['workforce-refresh-token'];
   if (token) {
     try {
       const decoded = verifyToken(token, 'refresh');
@@ -259,8 +259,8 @@ const logout = asyncHandler(async (req, res) => {
     }
   }
 
-  res.clearCookie('accessToken', COOKIE_OPTIONS);
-  res.clearCookie('refreshToken', COOKIE_OPTIONS);
+  res.clearCookie('workforce-token', COOKIE_OPTIONS);
+  res.clearCookie('workforce-refresh-token', COOKIE_OPTIONS);
   res.status(200).json({ message: 'Signed out successfully.' });
 });
 
@@ -357,6 +357,89 @@ const getMe = asyncHandler(async (req, res) => {
   res.status(200).json({ user: req.user.toAuthJSON() });
 });
 
+// ─── ADD MANAGER (Admin only) ────────────────────────────────────────────────
+const addManager = asyncHandler(async (req, res) => {
+  const { name, email, password, city, street } = req.body;
+
+  // ── Field presence check ──────────────────────────────────────────────────
+  const required = { name, email, password, city, street };
+  const missing = Object.keys(required).filter((k) => !required[k]?.toString().trim());
+  if (missing.length) {
+    return res.status(400).json({
+      message: 'All fields are required.',
+      fields: missing,
+    });
+  }
+
+  // ── Duplicate check ───────────────────────────────────────────────────────
+  const existing = await Auth.findOne({ email: email.toLowerCase().trim() });
+  if (existing) {
+    return res.status(400).json({ message: 'A user with this email already exists.' });
+  }
+
+  // ── Create manager ────────────────────────────────────────────────────────
+  const manager = new Auth({
+    name,
+    email,
+    password,
+    city,
+    street,
+    role: 'manager',
+    creatorId: req.user._id,
+    isEmailVerified: true, // Pre-verified since added by admin
+  });
+
+  await manager.save();
+
+  res.status(201).json({
+    message: 'Manager added successfully.',
+    manager: manager.toAuthJSON(),
+  });
+});
+
+// ─── DELETE MANAGER (Admin only) ─────────────────────────────────────────────
+const deleteManager = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+
+  const manager = await Auth.findById(id);
+  if (!manager) {
+    return res.status(404).json({ message: 'Manager not found.' });
+  }
+
+  if (manager.role !== 'manager') {
+    return res.status(403).json({ message: 'Only managers can be deleted via this endpoint.' });
+  }
+
+  await Auth.findByIdAndDelete(id);
+
+  res.status(200).json({ message: 'Manager deleted successfully.' });
+});
+
+// ─── UPDATE MANAGER PASSWORD (Admin only) ────────────────────────────────────
+const updateManagerPassword = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const { password } = req.body;
+
+  if (!password || password.length < 8) {
+    return res.status(400).json({ message: 'Password must be at least 8 characters.' });
+  }
+
+  const manager = await Auth.findById(id);
+  if (!manager) {
+    return res.status(404).json({ message: 'Manager not found.' });
+  }
+
+  if (manager.role !== 'manager') {
+    return res.status(403).json({ message: 'Only manager passwords can be updated via this endpoint.' });
+  }
+
+  manager.password = password;
+  manager.refreshToken = undefined; // Invalidate current session
+  await manager.save();
+
+  res.status(200).json({ message: 'Manager password updated successfully.' });
+});
+
 export {
   register,
   verifyEmail,
@@ -367,4 +450,7 @@ export {
   resetPassword,
   validateResetToken,
   getMe,
+  addManager,
+  deleteManager,
+  updateManagerPassword,
 };
