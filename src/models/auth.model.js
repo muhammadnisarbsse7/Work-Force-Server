@@ -94,8 +94,6 @@
 
 // module.exports = mongoose.model('User', userSchema);
 
-
-
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
@@ -120,16 +118,11 @@ const encrypt = (plain) => {
 
 const decrypt = (stored) => {
   const [ivHex, tagHex, encHex] = stored.split(':');
-  const decipher = crypto.createDecipheriv(
-    ALGO,
-    getEncKey(),
-    Buffer.from(ivHex, 'hex')
-  );
+  const decipher = crypto.createDecipheriv(ALGO, getEncKey(), Buffer.from(ivHex, 'hex'));
   decipher.setAuthTag(Buffer.from(tagHex, 'hex'));
-  return Buffer.concat([
-    decipher.update(Buffer.from(encHex, 'hex')),
-    decipher.final(),
-  ]).toString('utf8');
+  return Buffer.concat([decipher.update(Buffer.from(encHex, 'hex')), decipher.final()]).toString(
+    'utf8'
+  );
 };
 
 const authSchema = new mongoose.Schema(
@@ -204,7 +197,7 @@ const authSchema = new mongoose.Schema(
     role: {
       type: String,
       enum: ['admin', 'manager', 'user'],
-      default: 'admin',
+      default: 'manager',
     },
     creatorId: {
       type: mongoose.Schema.Types.ObjectId,
@@ -220,7 +213,6 @@ authSchema.pre('save', async function () {
   if (!this.isModified('password')) return;
   this.password = await bcrypt.hash(this.password, 12);
 });
-
 
 // ─── Instance methods ─────────────────────────────────────────────────────────
 authSchema.methods.comparePassword = async function (candidate) {
@@ -282,10 +274,12 @@ authSchema.methods.toAuthJSON = function () {
     role: this.role || 'admin', // Ensure role exists even for old records
     creatorId: this.creatorId,
     isEmailVerified: this.isEmailVerified,
-    billing: this.cardLastFour ? {
-      cardName: this.cardName,
-      cardLastFour: this.cardLastFour,
-    } : null,
+    billing: this.cardLastFour
+      ? {
+          cardName: this.cardName,
+          cardLastFour: this.cardLastFour,
+        }
+      : null,
   };
 };
 

@@ -15,9 +15,9 @@ router.use(protect);
 // ── bulk-delete BEFORE /:id ───────────────────────────────────────
 router.delete('/bulk-delete', deleteManyTransactions);
 
-router.get('/me',              getMyTransactions);
-router.get('/',                getAllTransactions);
-router.get('/:id/invoice',     getInvoicePdf);
-router.delete('/:id',          deleteTransaction);
+router.get('/me', getMyTransactions);
+router.get('/', getAllTransactions);
+router.get('/:id/invoice', getInvoicePdf);
+router.delete('/:id', deleteTransaction);
 
 export default router;

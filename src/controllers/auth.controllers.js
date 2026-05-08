@@ -12,8 +12,8 @@ import asyncHandler from '../utils/asyncHandler.js';
 
 const COOKIE_OPTIONS = {
   httpOnly: true,
-  secure: process.env.NODE_ENV === 'production',
-  sameSite: 'lax', // 'strict' blocks cookies on cross-port fetch (5173→5000)
+  secure: process.env.NODE_ENV === 'production', // Must be true for SameSite: None
+  sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
 };
 
 const ACCESS_COOKIE_OPTS = { ...COOKIE_OPTIONS, maxAge: 15 * 60 * 1000 };
