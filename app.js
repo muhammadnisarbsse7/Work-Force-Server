@@ -16,6 +16,7 @@ import projectRoutes from './src/routes/project.routes.js';
 import violationRoutes from './src/routes/violation.routes.js';
 import subscriptionRoutes from './src/routes/subscription.routes.js';
 import transactionRoutes from './src/routes/transaction.routes.js';
+import profileRoutes from './src/routes/profile.routes.js';
 
 
 
@@ -104,17 +105,17 @@ app.use(globalLimiter);
 
 // ─── Routes ──────────────────────────────────────────────────────────────────
 app.use('/api/auth', authRoutes);
-app.use('/', authRoutes); // Support root-level links from emails
 app.use('/api/users', userRoutes);
-app.use('/uploads', express.static('uploads'));
 app.use('/api/vehicles', vehicleRoutes);
 app.use('/api/sensors', sensorRoutes);
 app.use('/api/projects', projectRoutes);
 app.use('/api/violations', violationRoutes);
-
+app.use('/api/profile', profileRoutes);
 app.use('/api/subscriptions', subscriptionRoutes);
 app.use('/api/transactions', transactionRoutes);
 
+app.use('/', authRoutes); // Support root-level links from emails
+app.use('/uploads', express.static('uploads'));
 
 
 // ─── 404 handler ─────────────────────────────────────────────────────────────

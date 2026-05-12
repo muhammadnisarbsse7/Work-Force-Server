@@ -161,6 +161,19 @@ const authSchema = new mongoose.Schema(
       trim: true,
     },
 
+    // ── Phone Number ──────────────────────────────────────────────────
+    phoneNumber: {
+      type: String,
+      default: '',
+      trim: true,
+    },
+
+    // ── Profile Photo — Cloudinary URL ───────────────────────────────
+    profilePhoto: {
+      type: String,
+      default: '',
+    },
+
     // ── Billing — encrypted at rest, never returned by default ───────────────
     cardName: {
       type: String,
@@ -271,7 +284,9 @@ authSchema.methods.toAuthJSON = function () {
     email: this.email,
     city: this.city,
     street: this.street,
-    role: this.role || 'admin', // Ensure role exists even for old records
+    phoneNumber: this.phoneNumber,
+    profilePhoto: this.profilePhoto,
+    role: this.role || 'admin', 
     creatorId: this.creatorId,
     isEmailVerified: this.isEmailVerified,
     billing: this.cardLastFour

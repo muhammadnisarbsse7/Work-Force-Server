@@ -16,7 +16,7 @@ const COOKIE_OPTIONS = {
   sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
 };
 
-const ACCESS_COOKIE_OPTS = { ...COOKIE_OPTIONS, maxAge: 15 * 60 * 1000 };
+const ACCESS_COOKIE_OPTS = { ...COOKIE_OPTIONS, maxAge: 24 * 60 * 60 * 1000 };
 const REFRESH_COOKIE_OPTS = { ...COOKIE_OPTIONS, maxAge: 7 * 24 * 60 * 60 * 1000 };
 
 const attachTokenCookies = (res, accessToken, refreshToken) => {
