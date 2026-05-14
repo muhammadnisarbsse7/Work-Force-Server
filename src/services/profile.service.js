@@ -51,7 +51,7 @@ class ProfileService {
     if (!isMatch) throw new Error('Current password is incorrect');
 
     // Hash and save new password
-    user.password = await bcrypt.hash(newPassword, 12);
+    user.password = newPassword;
     await user.save();
 
     return { message: 'Password updated successfully' };
