@@ -386,13 +386,23 @@ const addManager = asyncHandler(async (req, res) => {
     street,
     role: 'manager',
     creatorId: req.user._id,
-    isEmailVerified: true, // Pre-verified since added by admin
   });
 
+  // Generate email verification token (same flow as register)
+  const verifyToken_ = manager.createToken('emailVerify');
   await manager.save();
 
+  // ── Send verification email ───────────────────────────────────────────────
+  try {
+    await sendVerificationEmail(manager.email, verifyToken_);
+  } catch (err) {
+    // Roll back if email fails
+    await Auth.findByIdAndDelete(manager._id);
+    return res.status(500).json({ message: 'Error sending verification email. Manager not created.' });
+  }
+
   res.status(201).json({
-    message: 'Manager added successfully.',
+    message: 'Manager added successfully. A verification email has been sent to them.',
     manager: manager.toAuthJSON(),
   });
 });
